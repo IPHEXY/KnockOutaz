@@ -1178,6 +1178,15 @@ document.getElementById("bossMessageParseBtn").onclick = async () => {
     return;
   }
 
+  const saved = await saveTimerToCloud(
+  boss.mapKey,
+  channel,
+  boss.label,
+  timeStr,
+  endTs
+);
+if (!saved) return;
+
 startRespawnTimer(boss.mapKey, channel, endTs);
 loadMap(boss.mapKey);
 
