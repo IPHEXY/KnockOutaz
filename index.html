@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Last Chaos Boss Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    /* MOBILE OPTIMIERUNGEN */
+@media (max-width: 600px) {
+
+  h1 {
+    font-size: 1.4rem;
+    text-align: center;
+  }
+
+  .map-container {
+    min-height: 200px;
+  }
+
+  .timer-row {
+    font-size: 0.85rem;
+    padding: 0.35rem 0;
+  }
+
+  button {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  input, select {
+    font-size: 0.85rem !important;
+  }
+
+  .map-tabs {
+    justify-content: center;
+  }
+}
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050816;
+      color: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+  .app {
+  max-width: 1400px;
+  width: 100%;
+  padding: 1.5rem;
+}
+
+    h1 { font-size: 1.8rem; margin-bottom: 0.75rem; }
+    .subtitle { font-size: 0.95rem; color: #9ca3af; margin-bottom: 1.25rem; }
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.7fr 1.3fr;
+  gap: 1.25rem;
+}
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #1f2937, #020617);
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      border: 1px solid rgba(148,163,184,0.2);
+    }
+
+    .map-tabs {
+      display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;
+    }
+
+    .map-tab {
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      border-radius: 999px;
+      padding: 0.35rem 0.9rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .map-tab.active {
+      background: linear-gradient(135deg, #38bdf8, #a855f7);
+      color: #020617; font-weight: 600;
+    }
+
+    .map-container {
+      position: relative;
+      width: 100%;
+      border-radius: 0.9rem;
+      overflow: hidden;
+      background: #020617;
+      border: 1px solid rgba(148,163,184,0.3);
+      min-height: 260px;
+    }
+
+    .map-image { width: 100%; height: auto; user-select: none; }
+
+    .map-marker {
+      position: absolute;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #f97316;
+      border: 2px solid #020617;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    .marker-label {
+      position: absolute;
+      transform: translate(-50%, -30px);
+      font-size: 0.75rem;
+      background: rgba(15,23,42,0.9);
+      padding: 2px 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.6);
+      white-space: nowrap;
+    }
+
+    .timer-display { margin-left: auto; }
+    .timer-ready { color: #4ade80; font-weight: bold; }
+
+    input, select, button {
+      width: 100%;
+      padding: 0.55rem;
+      margin-top: 0.3rem;
+      border-radius: 0.6rem;
+      background: rgba(15,23,42,0.9);
+      color: #fff;
+      border: 1px solid rgba(148,163,184,0.5);
+      outline: none;
+    }
+
+    button {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: none;
+      margin-top: 0.7rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .timer-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .timer-row.dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  align-items: center;
+}
+
+.timer-row.dual .map-label {
+  font-weight: 600;
+}
+
+.timer-row.dual .timer-display {
+  text-align: right;
+}
+/* HEADER für CH1 / CH2 */
+.timer-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 0.45rem 0;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 0.4rem;
+  color: #e5e5e5;
+}
+
+.timer-header span {
+  text-align: center;
+}
+
+
+    .hint { font-size: 0.8rem; color: #aaa; margin-top: 0.4rem; }
+
+    .status {
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+}
+
+.status-ok {
+  color: #4ade80;
+}
+
+.status-error {
+  color: #f87171;
+}
+
+.logbook-actions {
+  margin: 0.75rem 0;
+}
+
+.logbook-actions button {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.logbook-entry {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148,163,184,0.25);
+  border-radius: 0.7rem;
+  padding: 0.5rem 0.6rem;
+}
+
+.logbook-entry-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+
+.logbook-boss {
+  font-weight: 700;
+  color: #f9fafb;
+  font-size: 0.9rem;
+}
+
+.logbook-channel {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+}
+
+.logbook-meta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.logbook-empty {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+}
+.status {
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+}
+
+.status-ok {
+  color: #4ade80;
+}
+
+.status-error {
+  color: #f87171;
+}
+
+.logbook-actions {
+  margin: 0.75rem 0;
+}
+
+.logbook-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow: visible;
+  max-height: none;
+}
+
+.panel-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.panel-tab {
+  flex: 1;
+  border: 1px solid rgba(148,163,184,0.4);
+  background: rgba(15,23,42,0.9);
+  color: #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.panel-tab.active {
+  background: linear-gradient(135deg, #38bdf8, #a855f7);
+  color: #020617;
+  font-weight: 700;
+}
+
+.panel-content {
+  display: none;
+}
+
+.panel-content.active {
+  display: block;
+}
+.timer-cooldown {
+  color: #f87171;
+  font-weight: 700;
+}
+
+.timer-soon {
+  color: #facc15;
+  font-weight: 700;
+}
+
+.timer-ready {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .respawn-darkmind-row {
+    flex-direction: column;
+  }
+}
+
+.right-side {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.darkmind-standalone {
+  min-width: 0;
+  margin-top: 0px;
+}
+
+@media (max-width: 1200px) {
+  .right-side {
+    grid-template-columns: 1fr;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <h1>Last Chaos – Raidboss Map</h1>
+    <p class="subtitle">Automatische Map- & Boss-Erkennung + Respawn Timer pro Channel</p>
+
+    <div class="layout">
+      <!-- MAP LEFT -->
+      <div class="card">
+        <div class="map-tabs">
+          <button class="map-tab active" data-map="juno" type="button">Juno</button>
+          <button class="map-tab" data-map="dratan" type="button">Dratan</button>
+          <button class="map-tab" data-map="merac" type="button">Merac</button>
+          <button class="map-tab" data-map="egeha" type="button">Egeha</button>
+          <button class="map-tab" data-map="strayana">Strayana</button>
+        </div>
+
+        <div class="map-container">
+          <img id="mapImage" class="map-image" src="" alt="" />
+          <div id="mapMarker" class="map-marker">
+            <div id="markerLabel" class="marker-label">Boss</div>
+          </div>
+        </div>
+
+        <div id="mapDetails" class="map-details"></div>
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div class="right-side">
+        <!-- TRACKER / LOGBOOK -->
+        <div class="card">
+          <div class="panel-tabs">
+            <button class="panel-tab active" data-panel="tracker" type="button">Tracker</button>
+            <button class="panel-tab" data-panel="logbook" type="button">Logbuch</button>
+          </div>
+
+          <div id="panel-tracker" class="panel-content active">
+            <form id="coordsForm">
+              <label>Roh-Servernachricht (optional)</label>
+              <input
+                id="rawInput"
+                type="text"
+                placeholder='z.B. "Ancalagor ist in Egeha bei 496, 667 erschienen."'
+              />
+
+              <div class="form-group">
+                <label for="coordInput">Koordinaten (X Y oder X,Y)</label>
+                <input
+                  type="text"
+                  id="coordInput"
+                  placeholder='z.B. "1234 567" oder "1234,567"'
+                />
+              </div>
+
+              <label>Marker-Label (optional)</label>
+              <input id="markerText" type="text" placeholder="Raidboss" />
+
+              <button type="submit">Position anzeigen</button>
+              <div id="statusText" class="status"></div>
+            </form>
+
+            <hr style="margin:1rem 0; opacity:0.2;">
+
+            <h3>Respawn-Timer</h3>
+            <p class="hint">Nächster Spawn möglich in:</p>
+
+            <div class="timer-list">
+              <div class="timer-header">
+                <span></span>
+                <span>CH1</span>
+                <span>CH2</span>
+              </div>
+
+              <div class="timer-row dual">
+                <span class="map-label">Juno</span>
+                <span id="timerDisplay-juno-ch1" class="timer-display">--:--:--</span>
+                <span id="timerDisplay-juno-ch2" class="timer-display">--:--:--</span>
+              </div>
+
+              <div class="timer-row dual">
+                <span class="map-label">Dratan</span>
+                <span id="timerDisplay-dratan-ch1" class="timer-display">--:--:--</span>
+                <span id="timerDisplay-dratan-ch2" class="timer-display">--:--:--</span>
+              </div>
+
+              <div class="timer-row dual">
+                <span class="map-label">Merac</span>
+                <span id="timerDisplay-merac-ch1" class="timer-display">--:--:--</span>
+                <span id="timerDisplay-merac-ch2" class="timer-display">--:--:--</span>
+              </div>
+
+              <div class="timer-row dual">
+                <span class="map-label">Egeha</span>
+                <span id="timerDisplay-egeha-ch1" class="timer-display">--:--:--</span>
+                <span id="timerDisplay-egeha-ch2" class="timer-display">--:--:--</span>
+              </div>
+
+              <div class="timer-row dual">
+                <span class="map-label">Pyra</span>
+                <span id="timerDisplay-pyra-ch1" class="timer-display">--:--:--</span>
+                <span id="timerDisplay-pyra-ch2" class="timer-display">--:--:--</span>
+              </div>
+              <div class="timer-row dual">
+  <span class="map-label">Mist Shadow Dragon</span>
+  <span id="timerDisplay-mist-ch1" class="timer-display">--:--:--</span>
+  <span id="timerDisplay-mist-ch2" class="timer-display">--:--:--</span>
+</div>
+<div class="timer-row dual">
+  <span class="map-label">Blood Shadow Dragon</span>
+  <span id="timerDisplay-blood-ch1" class="timer-display">--:--:--</span>
+  <span id="timerDisplay-blood-ch2" class="timer-display">--:--:--</span>
+</div>
+
+<div class="timer-row dual timer-row-strayana">
+  <span class="map-label">Strayana</span>
+  <span id="timerDisplay-strayana-ch1" class="timer-display">--:--:--</span>
+  <span id="timerDisplay-strayana-ch2" class="timer-display">--:--:--</span>
+</div>
+
+            </div>
+
+            <label>Boss Kill – Servernachricht</label>
+            <input
+              id="bossMessageInput"
+              type="text"
+              placeholder='z.B. "Mogbor has been defeated by ..." oder "Diabloras wurde besiegt von ..."'
+            />
+
+<label style="margin-top:0.6rem;">Channel wählen</label>
+<select id="bossChannelSelect">
+  <option value="ch1">Channel 1</option>
+  <option value="ch2">Channel 2</option>
+</select>
+
+<label style="margin-top:0.6rem;">Uhrzeit der Nachricht (HH:MM)</label>
+<input id="bossKillTimeInput" type="text" placeholder="15:16" />
+
+            <button id="bossMessageParseBtn" type="button">Timer starten</button>
+
+          </div>
+
+          <div id="panel-logbook" class="panel-content">
+            <h3>Logbuch</h3>
+            <p class="hint">Zeigt die zuletzt erkannten Boss-Kills und berechneten Respawns.</p>
+
+            <div class="logbook-actions">
+              <button id="clearLogbookBtn" type="button">Logbuch löschen</button>
+            </div>
+
+            <div id="logbookList" class="logbook-list">
+              <div class="logbook-empty">Noch keine Einträge vorhanden.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DARKMIND EXTRA -->
+<div class="card darkmind-standalone">
+  <h3>Spezialbosse</h3>
+  <p class="hint">Feste 1h Timer für Spezialbosse.</p>
+
+  <hr style="margin:0.8rem 0; opacity:0.2;">
+
+  <h4 style="margin:0 0 0.4rem 0;">Darkmind Terrain</h4>
+  <label>Kill-Zeit (HH:MM)</label>
+  <input id="pyraKillTimeInput" type="text" placeholder="15:16" />
+
+  <label style="margin-top:0.6rem;">Channel wählen</label>
+  <select id="pyraChannelSelect">
+    <option value="ch1">Channel 1</option>
+    <option value="ch2">Channel 2</option>
+  </select>
+
+  <button id="startPyraTimerBtn" type="button">Darkmind Terrain Timer starten</button>
+
+  <hr style="margin:1rem 0; opacity:0.2;">
+
+  <h4 style="margin:0 0 0.4rem 0;">Mist Shadow Dragon</h4>
+  <label>Kill-Zeit (HH:MM)</label>
+  <input id="mistKillTimeInput" type="text" placeholder="15:16" />
+
+  <label style="margin-top:0.6rem;">Channel wählen</label>
+  <select id="mistChannelSelect">
+    <option value="ch1">Channel 1</option>
+    <option value="ch2">Channel 2</option>
+  </select>
+
+  <button id="startMistTimerBtn" type="button">Mist Shadow Dragon Timer starten</button>
+
+  <hr style="margin:1rem 0; opacity:0.2;">
+
+  <h4 style="margin:0 0 0.4rem 0;">Blood Shadow Dragon</h4>
+  <label>Kill-Zeit (HH:MM)</label>
+  <input id="bloodKillTimeInput" type="text" placeholder="15:16" />
+
+  <label style="margin-top:0.6rem;">Channel wählen</label>
+  <select id="bloodChannelSelect">
+    <option value="ch1">Channel 1</option>
+    <option value="ch2">Channel 2</option>
+  </select>
+
+  <button id="startBloodTimerBtn" type="button">Blood Shadow Dragon Timer starten</button>
+</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- SCRIPT START -->
+    <script>
+const SUPABASE_URL = "https://dikccjokozxbdfcndsvk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2Njam9rb3h6YmRmY25kc3ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MTM5MzgsImV4cCI6MjA5MDE4OTkzOH0.dMOpPC_7tb07MS6a0S7YNvPkWx2txngT-v6YHhhPbRI";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function saveTimerToCloud(mapKey, channel, bossLabel, killTimeText, endTs) {
+
+console.log("SAVE FUNCTION CALLED", mapKey, channel);
+
+  const { error } = await supabaseClient
+    .from("boss_timers")
+    .upsert(
+      {
+        map_key: mapKey,
+        channel: channel,
+        boss_label: bossLabel,
+        kill_time_text: killTimeText,
+        end_ts: endTs,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: "map_key,channel"
+      }
+    );
+
+if (error) {
+  console.error("Supabase save error:", error);
+  setStatus(`Timer konnte nicht online gespeichert werden: ${error.message}`, "error");
+  return false;
+}
+
+  return true;
+}
+
+async function loadTimersFromCloud() {
+  const { data, error } = await supabaseClient
+    .from("boss_timers")
+    .select("*");
+
+  if (error) {
+    console.error("Supabase load error:", error);
+    return;
+  }
+
+  Object.keys(timerState).forEach(key => {
+    const st = timerState[key];
+    st.end = null;
+    st.hasRang = false;
+    if (st.intervalId) {
+      clearInterval(st.intervalId);
+      st.intervalId = null;
+    }
+  });
+
+  data.forEach(row => {
+    startRespawnTimer(row.map_key, row.channel, row.end_ts);
+  });
+const saved = await saveTimerToCloud(
+  boss.mapKey,
+  channel,
+  boss.label,
+  timeStr,
+  endTs
+);
+if (!saved) return;
+}
+
+/**********************************
+ *   MAP KONFIGURATION
+ **********************************/
+const mapConfigs = {
+  juno: {
+    name: "Juno",
+    img: "maps/Juno.png",
+    minX: 1, maxX: 1500,
+    minY: 1, maxY: 1500,
+    offsetX: -28,
+    offsetY: -72
+  },
+
+  dratan: {
+    name: "Dratan",
+    img: "maps/Dratan.png",
+    minX: 1, maxX: 3000,
+    minY: 1, maxY: 3000,
+    offsetX: -67,
+    offsetY: 10
+  },
+
+  merac: {
+    name: "Merac",
+    img: "maps/Merac.png",
+    minX: 1, maxX: 1500,
+    minY: 1, maxY: 1500,
+    offsetX: -10,
+    offsetY: 10
+  },
+
+  egeha: {
+    name: "Egeha",
+    img: "maps/Egeha.png",
+    minX: 1, maxX: 1500,
+    minY: 1, maxY: 1500,
+    offsetX: -15,
+    offsetY: 20
+  },
+
+  pyra: {
+  name: "Pyra",
+  img: "",
+  minX: 1, maxX: 1,
+  minY: 1, maxY: 1,
+  offsetX: 0,
+  offsetY: 0
+},
+
+strayana: {
+  name: "Strayana",
+  img: "maps/Strayana.png",
+  minX: 1, maxX: 1500,
+  minY: 1, maxY: 1500,
+  offsetX: -20,
+  offsetY: -12
+}
+
+};
+
+let currentMapKey = "juno";
+let lastCoords = null;
+
+const mapImage = document.getElementById("mapImage");
+const mapMarker = document.getElementById("mapMarker");
+const markerLabel = document.getElementById("markerLabel");
+const mapTabs = document.querySelectorAll(".map-tab");
+const mapDetails = document.getElementById("mapDetails");
+
+const rawInput = document.getElementById("rawInput");
+const coordInput = document.getElementById("coordInput");
+const markerText = document.getElementById("markerText");
+const statusText = document.getElementById("statusText");
+const coordsForm = document.getElementById("coordsForm");
+const panelTabs = document.querySelectorAll(".panel-tab");
+const panelContents = document.querySelectorAll(".panel-content");
+
+/**********************************
+ *   LOGBUCH
+ **********************************/
+const logbookList = document.getElementById("logbookList");
+const clearLogbookBtn = document.getElementById("clearLogbookBtn");
+const LOGBOOK_STORAGE_KEY = "lc_boss_logbook";
+const MAX_LOG_ENTRIES = 10;
+
+let logbookEntries = [];
+
+function formatDateTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function formatSpawnTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function saveLogbook() {
+  localStorage.setItem(LOGBOOK_STORAGE_KEY, JSON.stringify(logbookEntries));
+}
+
+function loadLogbook() {
+  try {
+    const raw = localStorage.getItem(LOGBOOK_STORAGE_KEY);
+    logbookEntries = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn("Logbuch konnte nicht geladen werden:", e);
+    logbookEntries = [];
+  }
+  renderLogbook();
+}
+
+function renderLogbook() {
+  if (!logbookEntries.length) {
+    logbookList.innerHTML = `<div class="logbook-empty">Noch keine Einträge vorhanden.</div>`;
+    return;
+  }
+
+  logbookList.innerHTML = logbookEntries.map(entry => `
+    <div class="logbook-entry">
+      <div class="logbook-entry-top">
+        <div class="logbook-boss">${entry.bossLabel}</div>
+        <div class="logbook-channel">${entry.channel.toUpperCase()}</div>
+      </div>
+      <div class="logbook-meta">
+        Kill: ${entry.killTimeText} | Spawn möglich ab: ${formatSpawnTime(entry.spawnAt)}
+      </div>
+    </div>
+  `).join("");
+}
+
+function addLogbookEntry({ bossLabel, mapKey, channel, killTimeText, spawnAt }) {
+  const mapName = mapConfigs[mapKey]?.name || mapKey;
+
+  const newEntry = {
+    bossLabel,
+    mapKey,
+    mapName,
+    channel,
+    killTimeText,
+    spawnAt,
+    loggedAt: Date.now()
+  };
+
+  logbookEntries = logbookEntries.filter(entry => {
+    return !(entry.bossLabel === bossLabel && entry.channel === channel);
+  });
+
+  logbookEntries.unshift(newEntry);
+
+  logbookEntries.sort((a, b) => b.loggedAt - a.loggedAt);
+
+  if (logbookEntries.length > MAX_LOG_ENTRIES) {
+    logbookEntries = logbookEntries.slice(0, MAX_LOG_ENTRIES);
+  }
+
+  saveLogbook();
+  renderLogbook();
+}
+
+clearLogbookBtn.addEventListener("click", () => {
+  logbookEntries = [];
+  saveLogbook();
+  renderLogbook();
+  setStatus("Logbuch wurde gelöscht.", "ok");
+});
+
+/**********************************
+ *   MAP-TABS KLICK-EVENTS
+ **********************************/
+mapTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    loadMap(tab.dataset.map);
+  });
+});
+
+
+// Status-Anzeige
+function setStatus(msg, type="ok") {
+  statusText.textContent = msg;
+  statusText.className = "status";
+  statusText.classList.add(type === "ok" ? "status-ok" : "status-error");
+}
+
+
+/**********************************
+ *   MAP LADEN
+ **********************************/
+function loadMap(mapKey) {
+  currentMapKey = mapKey;
+  const cfg = mapConfigs[mapKey];
+
+  mapImage.src = cfg.img;
+  mapImage.alt = cfg.name;
+
+  // Tabs aktiv setzen
+  mapTabs.forEach(t =>
+    t.classList.toggle("active", t.dataset.map === mapKey)
+  );
+
+  mapDetails.innerHTML =
+    `<strong>Aktuelle Map:</strong> ${cfg.name}<br>`
+    + `X: ${cfg.minX}–${cfg.maxX}, Y: ${cfg.minY}–${cfg.maxY}`;
+
+  if (lastCoords) placeMarker(lastCoords.x, lastCoords.y, false);
+}
+
+
+// Liest Koordinaten aus einem Text wie "1234 567" oder "1234, 567"
+// oder aus der gesamten Roh-Servernachricht
+function parseCoordsFromRaw(text) {
+  if (!text) return null;
+
+  // Alle Zahlen extrahieren
+  const nums = text.match(/-?\d+/g);
+  if (!nums || nums.length < 2) return null;
+
+  const x = parseInt(nums[0], 10);
+  const y = parseInt(nums[1], 10);
+
+  if (Number.isNaN(x) || Number.isNaN(y)) return null;
+
+  return { x, y };
+}
+
+
+/**********************************
+ *   MAP AUS TEXT ERKENNEN
+ **********************************/
+function detectMapFromText(text) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+
+  if (lower.includes("juno")) return "juno";
+  if (lower.includes("dratan")) return "dratan";
+  if (lower.includes("merac") || lower.includes("merak")) return "merac";
+  if (lower.includes("egeha")) return "egeha";
+  if (lower.includes("strayana")) return "strayana";
+
+  return null;
+}
+
+function detectBossFromText(text) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+
+  return bossConfigs.find(b =>
+    b.names.some(n => lower.includes(n.toLowerCase()))
+  ) || null;
+}
+
+/**********************************
+ *   MARKER SETZEN
+ **********************************/
+function placeMarker(x, y, showStatus = true) {
+  const cfg = mapConfigs[currentMapKey];
+  if (!cfg) return;
+
+  // Bereich clampen
+  if (x < cfg.minX || x > cfg.maxX || y < cfg.minY || y > cfg.maxY) {
+    x = Math.min(Math.max(x, cfg.minX), cfg.maxX);
+    y = Math.min(Math.max(y, cfg.minY), cfg.maxY);
+
+    if (showStatus) {
+      setStatus(`Koordinaten außerhalb des Bereichs für ${cfg.name}.`, "error");
+    }
+  }
+
+  // Bildgröße & Originalverhältnis
+  const rect = mapImage.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+
+  if (w === 0 || h === 0) return;
+
+  // Normierung 0..1
+  const nx = (x - cfg.minX) / (cfg.maxX - cfg.minX);
+  const ny = (y - cfg.minY) / (cfg.maxY - cfg.minY);
+
+  // Präzise Pixelposition
+  let px = nx * w;
+  let py = ny * h;
+
+  // Offsets RELATIV zur Skalierung anwenden
+  const scaleX = w / (cfg.maxX - cfg.minX);
+  const scaleY = h / (cfg.maxY - cfg.minY);
+
+  px += cfg.offsetX * scaleX;
+  py += cfg.offsetY * scaleY;
+
+  // Marker setzen
+  mapMarker.style.left = px + "px";
+  mapMarker.style.top = py + "px";
+  mapMarker.style.display = "block";
+
+  lastCoords = { x, y };
+
+  if (showStatus)
+    setStatus(`Marker gesetzt bei X ${x}, Y ${y} (${cfg.name})`, "ok");
+}
+
+
+
+coordsForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  // 1. Auto-Parsing aus Roh-Servernachricht
+  let coords = parseCoordsFromRaw(rawInput.value.trim());
+
+// Automatische Map-Erkennung
+const detectedMap = detectMapFromText(rawInput.value.trim());
+if (detectedMap) {
+    loadMap(detectedMap);
+}
+
+
+  // 2. Auto-Parsing aus Koordinatenfeld
+  if (!coords && coordInput.value.trim() !== "") {
+    coords = parseCoordsFromRaw(coordInput.value.trim());
+  }
+  
+
+  if (!coords) {
+    setStatus(
+      "Keine gültigen Koordinaten gefunden. Bitte zwei Zahlen eingeben.",
+      "error"
+    );
+    return;
+  }
+
+  // Automatisch Koordinatenfeld aktualisieren
+  coordInput.value = `${coords.x} ${coords.y}`;
+
+  // Marker-Text
+  const label = markerText.value.trim();
+  markerLabel.textContent = label !== "" ? label : "Boss";
+
+  // Marker setzen
+  placeMarker(coords.x, coords.y, true);
+});
+
+rawInput.addEventListener("input", () => {
+  const text = rawInput.value;
+
+  // 1. Koordinaten erkennen
+  const coords = parseCoordsFromRaw(text);
+  if (coords) {
+    coordInput.value = `${coords.x} ${coords.y}`;
+    placeMarker(coords.x, coords.y, false); // 🔥 direkt setzen
+  }
+
+  // 2. Map erkennen
+  const detectedMap = detectMapFromText(text);
+  if (detectedMap) {
+    loadMap(detectedMap);
+  }
+
+  // 3. Boss erkennen
+  const boss = detectBossFromText(text);
+  if (boss) {
+    markerLabel.textContent = boss.label;
+  }
+});
+
+
+
+/**********************************
+ *   TIMER SYSTEM
+ **********************************/
+const respawnDelayMs = 60 * 60 * 1000;
+const mapKeys = ["juno", "dratan", "merac", "egeha", "pyra", "strayana", "mist", "blood"];
+const channels = ["ch1", "ch2"];
+
+const timerState = {};
+const timerDisplays = {};
+
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function formatTime(ms) {
+  if (ms <= 0) return "00:00:00";
+  const s = Math.ceil(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+}
+
+function updateTimer(mapKey, channel) {
+  const key = `${mapKey}-${channel}`;
+  const st = timerState[key];
+  const d = timerDisplays[key];
+
+  if (!d) {
+    console.warn(`Timer-Display fehlt für ${key}`);
+    return;
+  }
+
+  if (!st.end) {
+    d.textContent = "--:--:--";
+    d.classList.remove("timer-ready", "timer-soon", "timer-cooldown");
+    return;
+  }
+
+  const remaining = st.end - Date.now();
+
+  d.classList.remove("timer-ready", "timer-soon", "timer-cooldown");
+
+  if (remaining <= 0) {
+    d.textContent = "SPAWN MÖGLICH";
+    d.classList.add("timer-ready");
+
+    if (!st.hasRang) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        gain.gain.value = 0.03;
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+        osc.onended = () => ctx.close();
+      } catch (e) {
+        console.warn("Beep fehlgeschlagen:", e);
+      }
+
+      st.hasRang = true;
+    }
+
+    clearInterval(st.intervalId);
+    st.intervalId = null;
+    return;
+  }
+
+  const soonThresholdMs = 10 * 60 * 1000;
+
+  if (remaining <= soonThresholdMs) {
+    d.textContent = `BALD MÖGLICH (${formatTime(remaining)})`;
+    d.classList.add("timer-soon");
+    return;
+  }
+
+  d.textContent = formatTime(remaining);
+  d.classList.add("timer-cooldown");
+}
+
+function startRespawnTimer(mapKey, channel, endTs) {
+  const key = `${mapKey}-${channel}`;
+  const st = timerState[key];
+
+  st.end = endTs || (Date.now() + respawnDelayMs);
+  st.hasRang = false;
+
+  if (st.intervalId) clearInterval(st.intervalId);
+  st.intervalId = setInterval(() => updateTimer(mapKey, channel), 1000);
+  updateTimer(mapKey, channel);
+}
+
+
+// Timer-Displays initialisieren
+mapKeys.forEach(m => {
+  channels.forEach(c => {
+    const key = `${m}-${c}`;
+    timerState[key] = { end: null, hasRang: false, intervalId: null };
+    timerDisplays[key] = document.getElementById(`timerDisplay-${key}`);
+  });
+});
+
+/**********************************
+ *   BOSS-DEFEAT ERKENNUNG
+ **********************************/
+const bossConfigs = [
+  {
+    mapKey: "juno",
+    names: ["Grand Balrog", "Diabloras"],
+    label: "Diabloras"
+  },
+  {
+    mapKey: "dratan",
+    names: ["Grand Devilroad Kamira", "Devilroad Kamira", "Teufelsfürst Winos"],
+    label: "Teufelsfürst Winos"
+  },
+  {
+    mapKey: "merac",
+    names: ["Grand Red Dragon", "Red Dragon", "Mogbor"],
+    label: "Mogbor"
+  },
+  {
+    mapKey: "egeha",
+    names: ["Grand Golden Dragon", "Golden Dragon", "Ancalagor"],
+    label: "Ancalagor"
+  },
+  {
+  mapKey: "strayana",
+  names: ["Blue Dragon", "Grand Blue Dragon"],
+  label: "Blue Dragon"
+}
+];
+
+function calculateRespawnEnd(timeStr, respawnMs = respawnDelayMs) {
+  const m = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+
+  const now = new Date();
+  const t = new Date();
+
+  t.setHours(Number(m[1]), Number(m[2]), 0, 0);
+
+  if (t > now) t.setDate(t.getDate() - 1);
+
+  return t.getTime() + respawnMs;
+}
+
+
+document.getElementById("bossMessageParseBtn").onclick = async () => {
+  const text = document.getElementById("bossMessageInput").value.trim();
+  const timeStr = document.getElementById("bossKillTimeInput").value.trim();
+  const channel = document.getElementById("bossChannelSelect").value;
+
+  if (!text) {
+    setStatus("Bitte Servernachricht eingeben.", "error");
+    return;
+  }
+
+  const lower = text.toLowerCase();
+
+  const boss = bossConfigs.find(b =>
+    b.names.some(n => lower.includes(n.toLowerCase())) &&
+    ( lower.includes("has been defeated") ||
+      (lower.includes("wurde") && lower.includes("besiegt")) )
+  );
+
+  if (!boss) {
+    setStatus("Boss nicht erkannt.", "error");
+    return;
+  }
+
+  const endTs = calculateRespawnEnd(timeStr);
+  if (!endTs) {
+    setStatus("Uhrzeit ungültig, Format HH:MM", "error");
+    return;
+  }
+
+startRespawnTimer(boss.mapKey, channel, endTs);
+loadMap(boss.mapKey);
+
+addLogbookEntry({
+  bossLabel: boss.label,
+  mapKey: boss.mapKey,
+  channel,
+  killTimeText: timeStr,
+  spawnAt: endTs
+});
+
+setStatus(`${boss.label}: Timer für ${boss.mapKey} (${channel}) gestartet.`, "ok");
+};
+
+const pyraRespawnMs = 60 * 60 * 1000;
+
+document.getElementById("startPyraTimerBtn").onclick = async () => {
+  const timeStr = document.getElementById("pyraKillTimeInput").value.trim();
+  const channel = document.getElementById("pyraChannelSelect").value;
+
+  if (!timeStr) {
+    setStatus("Bitte Kill-Zeit für Darkmind Terrain eingeben.", "error");
+    return;
+  }
+
+  const endTs = calculateRespawnEnd(timeStr, pyraRespawnMs);
+  if (!endTs) {
+    setStatus("Uhrzeit ungültig, Format HH:MM", "error");
+    return;
+  }
+
+startRespawnTimer("pyra", channel, endTs);
+
+const saved = await saveTimerToCloud("pyra", channel, "Darkmind Terrain", timeStr, endTs);
+if (!saved) return;
+
+addLogbookEntry({
+  bossLabel: "Darkmind Terrain",
+  mapKey: "pyra",
+  channel,
+  killTimeText: timeStr,
+  spawnAt: endTs
+});
+
+setStatus(`Darkmind Terrain: 1h Timer für ${channel} ab Kill-Zeit ${timeStr} gestartet.`, "ok");
+};
+
+const strayanaRespawnMs = 60 * 60 * 1000;
+
+document.getElementById("startMistTimerBtn").onclick = async () => {
+  const timeStr = document.getElementById("mistKillTimeInput").value.trim();
+  const channel = document.getElementById("mistChannelSelect").value;
+
+  if (!timeStr) {
+    setStatus("Bitte Kill-Zeit für Mist Shadow Dragon eingeben.", "error");
+    return;
+  }
+
+  const endTs = calculateRespawnEnd(timeStr, strayanaRespawnMs);
+  if (!endTs) {
+    setStatus("Uhrzeit ungültig, Format HH:MM", "error");
+    return;
+  }
+
+startRespawnTimer("mist", channel, endTs);
+loadMap("strayana");
+markerLabel.textContent = "Mist Shadow Dragon";
+placeMarker(355, 800, false);
+
+const saved = await saveTimerToCloud("mist", channel, "Mist Shadow Dragon", timeStr, endTs);
+if (!saved) return;
+
+addLogbookEntry({
+  bossLabel: "Mist Shadow Dragon",
+  mapKey: "strayana",
+  channel,
+  killTimeText: timeStr,
+  spawnAt: endTs
+});
+
+setStatus(`Mist Shadow Dragon: 1h Timer für ${channel} gestartet.`, "ok");
+};
+
+document.getElementById("startBloodTimerBtn").onclick = async () => {
+  const timeStr = document.getElementById("bloodKillTimeInput").value.trim();
+  const channel = document.getElementById("bloodChannelSelect").value;
+
+  if (!timeStr) {
+    setStatus("Bitte Kill-Zeit für Blood Shadow Dragon eingeben.", "error");
+    return;
+  }
+
+  const endTs = calculateRespawnEnd(timeStr, strayanaRespawnMs);
+  if (!endTs) {
+    setStatus("Uhrzeit ungültig, Format HH:MM", "error");
+    return;
+  }
+
+startRespawnTimer("blood", channel, endTs);
+loadMap("strayana");
+markerLabel.textContent = "Blood Shadow Dragon";
+placeMarker(1320, 1100, false);
+
+const saved = await saveTimerToCloud("blood", channel, "Blood Shadow Dragon", timeStr, endTs);
+if (!saved) return;
+
+addLogbookEntry({
+  bossLabel: "Blood Shadow Dragon",
+  mapKey: "strayana",
+  channel,
+  killTimeText: timeStr,
+  spawnAt: endTs
+});
+
+setStatus(`Blood Shadow Dragon: 1h Timer für ${channel} gestartet.`, "ok");
+};
+
+// Initiale Map laden
+loadMap("juno");
+loadLogbook();
+panelTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    const target = tab.dataset.panel;
+
+    panelTabs.forEach(t => {
+      t.classList.toggle("active", t === tab);
+    });
+
+    panelContents.forEach(content => {
+      content.classList.toggle("active", content.id === `panel-${target}`);
+    });
+  });
+  loadTimersFromCloud();
+setInterval(loadTimersFromCloud, 5000);
+});
+
+</script>
+</body>
+</html>
