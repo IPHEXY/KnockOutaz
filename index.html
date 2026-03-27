@@ -559,32 +559,34 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function saveTimerToCloud(mapKey, channel, bossLabel, killTimeText, endTs) {
+    console.log("SAVE START", { mapKey, channel, bossLabel, killTimeText, endTs });
 
-console.log("SAVE FUNCTION CALLED", mapKey, channel);
+    const { data, error } = await supabaseClient
+        .from("boss_timers")
+        .upsert(
+            {
+                map_key: mapKey,
+                channel: channel,
+                boss_label: bossLabel,
+                kill_time_text: killTimeText,
+                end_ts: endTs,
+                updated_at: new Date().toISOString()
+            },
+            {
+                onConflict: "map_key,channel"
+            }
+        )
+        .select();
 
-  const { error } = await supabaseClient
-    .from("boss_timers")
-    .upsert(
-      {
-        map_key: mapKey,
-        channel: channel,
-        boss_label: bossLabel,
-        kill_time_text: killTimeText,
-        end_ts: endTs,
-        updated_at: new Date().toISOString()
-      },
-      {
-        onConflict: "map_key,channel"
-      }
-    );
+    console.log("SAVE RESULT", { data, error });
 
-if (error) {
-  console.error("Supabase save error:", error);
-  setStatus(`Timer konnte nicht online gespeichert werden: ${error.message}`, "error");
-  return false;
-}
+    if (error) {
+        console.error("Supabase save error:", error);
+        setStatus(`Timer konnte nicht online gespeichert werden: ${error.message}`, "error");
+        return false;
+    }
 
-  return true;
+    return true;
 }
 
 async function loadTimersFromCloud() {
@@ -608,7 +610,13 @@ async function loadTimersFromCloud() {
   });
   
 data.forEach(row => {
-    startRespawnTimer(row.map_key, row.channel, row.end_ts);
+    if (
+        row.end_ts &&
+        row.end_ts > Date.now() &&
+        row.end_ts < Date.now() + 24 * 60 * 60 * 1000
+    ) {
+        startRespawnTimer(row.map_key, row.channel, row.end_ts);
+    }
 });
 }
 
