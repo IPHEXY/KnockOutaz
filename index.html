@@ -606,18 +606,10 @@ async function loadTimersFromCloud() {
       st.intervalId = null;
     }
   });
-
-  data.forEach(row => {
+  
+data.forEach(row => {
     startRespawnTimer(row.map_key, row.channel, row.end_ts);
-  });
-const saved = await saveTimerToCloud(
-  boss.mapKey,
-  channel,
-  boss.label,
-  timeStr,
-  endTs
-);
-if (!saved) return;
+});
 }
 
 /**********************************
