@@ -1298,6 +1298,8 @@ setStatus(`Blood Shadow Dragon: 1h Timer für ${channel} gestartet.`, "ok");
 // Initiale Map laden
 loadMap("juno");
 loadLogbook();
+loadTimersFromCloud();
+setInterval(loadTimersFromCloud, 5000);
 panelTabs.forEach(tab => {
   tab.addEventListener("click", () => {
     const target = tab.dataset.panel;
