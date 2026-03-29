@@ -599,15 +599,14 @@ async function loadTimersFromCloud() {
     return;
   }
 
-  Object.keys(timerState).forEach(key => {
+Object.keys(timerState).forEach(key => {
     const st = timerState[key];
     st.end = null;
-    st.hasRang = false;
     if (st.intervalId) {
-      clearInterval(st.intervalId);
-      st.intervalId = null;
+        clearInterval(st.intervalId);
+        st.intervalId = null;
     }
-  });
+});
   
 data.forEach(row => {
     if (
@@ -1083,9 +1082,16 @@ function updateTimer(mapKey, channel) {
 function startRespawnTimer(mapKey, channel, endTs) {
   const key = `${mapKey}-${channel}`;
   const st = timerState[key];
+  const newEnd = endTs || (Date.now() + respawnDelayMs);
 
-  st.end = endTs || (Date.now() + respawnDelayMs);
-  st.hasRang = false;
+  // Nur zurücksetzen, wenn sich der Timer wirklich geändert hat
+  const endChanged = st.end !== newEnd;
+
+  st.end = newEnd;
+
+  if (endChanged) {
+    st.hasRang = false;
+  }
 
   if (st.intervalId) clearInterval(st.intervalId);
   st.intervalId = setInterval(() => updateTimer(mapKey, channel), 1000);
