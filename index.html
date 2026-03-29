@@ -612,7 +612,6 @@ async function loadTimersFromCloud() {
 data.forEach(row => {
     if (
         row.end_ts &&
-        row.end_ts > Date.now() &&
         row.end_ts < Date.now() + 24 * 60 * 60 * 1000
     ) {
         startRespawnTimer(row.map_key, row.channel, row.end_ts);
