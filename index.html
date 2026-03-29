@@ -599,23 +599,45 @@ async function loadTimersFromCloud() {
     return;
   }
 
-Object.keys(timerState).forEach(key => {
-    const st = timerState[key];
-    st.end = null;
-    if (st.intervalId) {
+  const seenKeys = new Set();
+
+  data.forEach(row => {
+    if (
+      row.end_ts &&
+      row.end_ts < Date.now() + 24 * 60 * 60 * 1000
+    ) {
+      const key = `${row.map_key}-${row.channel}`;
+      seenKeys.add(key);
+
+      const st = timerState[key];
+
+      if (!st) return;
+
+      if (st.end !== row.end_ts) {
+        startRespawnTimer(row.map_key, row.channel, row.end_ts);
+      } else {
+        if (!st.intervalId) {
+          st.intervalId = setInterval(() => updateTimer(row.map_key, row.channel), 1000);
+        }
+        updateTimer(row.map_key, row.channel);
+      }
+    }
+  });
+
+  Object.keys(timerState).forEach(key => {
+    if (!seenKeys.has(key)) {
+      const st = timerState[key];
+      st.end = null;
+
+      if (st.intervalId) {
         clearInterval(st.intervalId);
         st.intervalId = null;
+      }
+
+      const [mapKey, channel] = key.split("-");
+      updateTimer(mapKey, channel);
     }
-});
-  
-data.forEach(row => {
-    if (
-        row.end_ts &&
-        row.end_ts < Date.now() + 24 * 60 * 60 * 1000
-    ) {
-        startRespawnTimer(row.map_key, row.channel, row.end_ts);
-    }
-});
+  });
 }
 
 /**********************************
@@ -1084,17 +1106,17 @@ function startRespawnTimer(mapKey, channel, endTs) {
   const st = timerState[key];
   const newEnd = endTs || (Date.now() + respawnDelayMs);
 
-  // Nur zurücksetzen, wenn sich der Timer wirklich geändert hat
   const endChanged = st.end !== newEnd;
-
   st.end = newEnd;
 
   if (endChanged) {
     st.hasRang = false;
   }
 
-  if (st.intervalId) clearInterval(st.intervalId);
-  st.intervalId = setInterval(() => updateTimer(mapKey, channel), 1000);
+  if (!st.intervalId) {
+    st.intervalId = setInterval(() => updateTimer(mapKey, channel), 1000);
+  }
+
   updateTimer(mapKey, channel);
 }
 
