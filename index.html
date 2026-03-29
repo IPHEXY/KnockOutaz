@@ -602,9 +602,11 @@ async function loadTimersFromCloud() {
   const seenKeys = new Set();
 
   data.forEach(row => {
+    const endTs = Number(row.end_ts);
+
     if (
-      row.end_ts &&
-      row.end_ts < Date.now() + 24 * 60 * 60 * 1000
+      endTs &&
+      endTs < Date.now() + 24 * 60 * 60 * 1000
     ) {
       const key = `${row.map_key}-${row.channel}`;
       seenKeys.add(key);
@@ -613,8 +615,8 @@ async function loadTimersFromCloud() {
 
       if (!st) return;
 
-      if (st.end !== row.end_ts) {
-        startRespawnTimer(row.map_key, row.channel, row.end_ts);
+      if (Number(st.end) !== endTs) {
+        startRespawnTimer(row.map_key, row.channel, endTs);
       } else {
         if (!st.intervalId) {
           st.intervalId = setInterval(() => updateTimer(row.map_key, row.channel), 1000);
@@ -1084,8 +1086,6 @@ function updateTimer(mapKey, channel) {
       st.hasRang = true;
     }
 
-    clearInterval(st.intervalId);
-    st.intervalId = null;
     return;
   }
 
@@ -1104,9 +1104,9 @@ function updateTimer(mapKey, channel) {
 function startRespawnTimer(mapKey, channel, endTs) {
   const key = `${mapKey}-${channel}`;
   const st = timerState[key];
-  const newEnd = endTs || (Date.now() + respawnDelayMs);
+  const newEnd = Number(endTs) || (Date.now() + respawnDelayMs);
 
-  const endChanged = st.end !== newEnd;
+  const endChanged = Number(st.end) !== newEnd;
   st.end = newEnd;
 
   if (endChanged) {
@@ -1245,10 +1245,10 @@ document.getElementById("startPyraTimerBtn").onclick = async () => {
     return;
   }
 
-startRespawnTimer("pyra", channel, endTs);
-
 const saved = await saveTimerToCloud("pyra", channel, "Darkmind Terrain", timeStr, endTs);
 if (!saved) return;
+
+startRespawnTimer("pyra", channel, endTs);
 
 addLogbookEntry({
   bossLabel: "Darkmind Terrain",
