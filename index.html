@@ -342,6 +342,41 @@
   }
 }
 
+/* SETTINGS DRAWER (SEITEN PANEL) */
+#settingsOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+  display: none;
+}
+
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(420px, 100%);
+  height: 100vh;
+  overflow-y: auto;
+  border-radius: 0;
+  margin: 0;
+  z-index: 1000;
+  padding: 1rem;
+
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+
+.settings-drawer.open {
+  transform: translateX(0);
+}
+
+@media (max-width: 600px) {
+  .settings-drawer {
+    width: 100%;
+  }
+}
+
   </style>
 </head>
 
@@ -362,6 +397,143 @@
 
   <!-- 👇 DEINE APP -->
   <div class="app" id="appRoot" style="display:none;">
+
+    <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+  <button id="settingsBtn" type="button" style="width:auto; padding:0.55rem 1rem;">
+    ⚙ Einstellungen
+  </button>
+</div>
+
+<div id="settingsOverlay" style="display:none;"></div>
+
+<div id="settingsModal" class="card settings-drawer">
+  <h3 style="margin-top:0;">Einstellungen</h3>
+
+<select id="soundSelect">
+  <option value="high">Hoher Ton</option>
+  <option value="low">Tiefer Ton</option>
+  <option value="double">Doppelton</option>
+  <option value="triple">Dreifachton</option>
+  <option value="pingpong">Ping-Pong</option>
+  <option value="alarm">Alarm</option>
+  <option value="soft">Sanft</option>
+  <option value="deep">Tief & Langsam</option>
+</select>
+
+  <label for="volumeRange" style="margin-top:0.8rem;">Lautstärke</label>
+  <input id="volumeRange" type="range" min="0" max="1" step="0.01" value="0.3" />
+
+  <div id="volumeValue" class="hint">0.30</div>
+
+  <label style="margin-top:0.8rem; display:block;">
+  <input id="muteCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Ton komplett deaktivieren (Mute)
+</label>
+
+<label style="margin-top:0.8rem; display:block; font-weight:700;">
+  Ton nur für bestimmte Bosse
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="soundJunoCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Balrog
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="soundDratanCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Devilroad Kamira
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="soundMeracCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Red Dragon
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="soundEgehaCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Golden Dragon
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="soundStrayanaCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Blue Dragon
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="soundPyraCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Darkmind Terrain
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="soundMistCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Mist Shadow Dragon
+</label>
+
+<label style="margin-top:0.4rem; margin-bottom:0.8rem; display:block;">
+  <input id="soundBloodCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Blood Shadow Dragon
+</label>
+
+<label style="margin-top:1rem; display:block; font-weight:700;">
+  Anzeige filtern (UI)
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showJunoCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Balrog
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showDratanCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Devilroad Kamira
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showMeracCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Red Dragon
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showEgehaCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Grand Golden Dragon
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showStrayanaCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Blue Dragon
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showPyraCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Darkmind Terrain
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showMistCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Mist Shadow Dragon
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="showBloodCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Blood Shadow Dragon
+</label>
+
+<label for="soonMinutes" style="margin-top:1rem; display:block;">„Bald möglich“ Minuten</label>
+<select id="soonMinutes">
+  <option value="1">1 Minute</option>
+  <option value="2">2 Minuten</option>
+  <option value="3">3 Minuten</option>
+  <option value="5">5 Minuten</option>
+  <option value="8">8 Minuten</option>
+  <option value="10">10 Minuten</option>
+  <option value="15">15 Minuten</option>
+  <option value="20">20 Minuten</option>
+  <option value="30">30 Minuten</option>
+</select>
+
+  <button id="testSoundBtn" type="button">Ton testen</button>
+  <button id="saveSettingsBtn" type="button">Einstellungen speichern</button>
+</div>
  
     <h1>Last Chaos – Raidboss Map</h1>
     <p class="subtitle">Automatische Map- & Boss-Erkennung + Respawn Timer pro Channel</p>
@@ -433,48 +605,48 @@
                 <span>CH2</span>
               </div>
 
-              <div class="timer-row dual">
-                <span class="map-label">Juno</span>
+              <div id="timerRow-juno" class="timer-row dual">
+  <span class="map-label">Grand Balrog</span>
                 <span id="timerDisplay-juno-ch1" class="timer-display">--:--:--</span>
                 <span id="timerDisplay-juno-ch2" class="timer-display">--:--:--</span>
               </div>
 
-              <div class="timer-row dual">
-                <span class="map-label">Dratan</span>
+              <div id="timerRow-dratan" class="timer-row dual">
+  <span class="map-label">Grand Devilroad Kamira</span>
                 <span id="timerDisplay-dratan-ch1" class="timer-display">--:--:--</span>
                 <span id="timerDisplay-dratan-ch2" class="timer-display">--:--:--</span>
               </div>
 
-              <div class="timer-row dual">
-                <span class="map-label">Merac</span>
+              <div id="timerRow-merac" class="timer-row dual">
+  <span class="map-label">Grand Red Dragon</span>
                 <span id="timerDisplay-merac-ch1" class="timer-display">--:--:--</span>
                 <span id="timerDisplay-merac-ch2" class="timer-display">--:--:--</span>
               </div>
 
-              <div class="timer-row dual">
-                <span class="map-label">Egeha</span>
+              <div id="timerRow-egeha" class="timer-row dual">
+  <span class="map-label">Grand Golden Dragon</span>
                 <span id="timerDisplay-egeha-ch1" class="timer-display">--:--:--</span>
                 <span id="timerDisplay-egeha-ch2" class="timer-display">--:--:--</span>
               </div>
 
-              <div class="timer-row dual">
-                <span class="map-label">Pyra</span>
+              <div id="timerRow-pyra" class="timer-row dual">
+  <span class="map-label">Darkmind Terrain</span>
                 <span id="timerDisplay-pyra-ch1" class="timer-display">--:--:--</span>
                 <span id="timerDisplay-pyra-ch2" class="timer-display">--:--:--</span>
               </div>
-              <div class="timer-row dual">
+              <div id="timerRow-mist" class="timer-row dual">
   <span class="map-label">Mist Shadow Dragon</span>
   <span id="timerDisplay-mist-ch1" class="timer-display">--:--:--</span>
   <span id="timerDisplay-mist-ch2" class="timer-display">--:--:--</span>
 </div>
-<div class="timer-row dual">
+<div id="timerRow-blood" class="timer-row dual">
   <span class="map-label">Blood Shadow Dragon</span>
   <span id="timerDisplay-blood-ch1" class="timer-display">--:--:--</span>
   <span id="timerDisplay-blood-ch2" class="timer-display">--:--:--</span>
 </div>
 
-<div class="timer-row dual timer-row-strayana">
-  <span class="map-label">Strayana</span>
+<div id="timerRow-strayana" class="timer-row dual timer-row-strayana">
+  <span class="map-label">Blue Dragon</span>
   <span id="timerDisplay-strayana-ch1" class="timer-display">--:--:--</span>
   <span id="timerDisplay-strayana-ch2" class="timer-display">--:--:--</span>
 </div>
@@ -787,6 +959,264 @@ const statusText = document.getElementById("statusText");
 const coordsForm = document.getElementById("coordsForm");
 const panelTabs = document.querySelectorAll(".panel-tab");
 const panelContents = document.querySelectorAll(".panel-content");
+
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const settingsOverlay = document.getElementById("settingsOverlay");
+const soundSelect = document.getElementById("soundSelect");
+const volumeRange = document.getElementById("volumeRange");
+const volumeValue = document.getElementById("volumeValue");
+const testSoundBtn = document.getElementById("testSoundBtn");
+const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+
+const muteCheckbox = document.getElementById("muteCheckbox");
+const soonMinutesInput = document.getElementById("soonMinutes");
+
+const soundJunoCheckbox = document.getElementById("soundJunoCheckbox");
+const soundDratanCheckbox = document.getElementById("soundDratanCheckbox");
+const soundMeracCheckbox = document.getElementById("soundMeracCheckbox");
+const soundEgehaCheckbox = document.getElementById("soundEgehaCheckbox");
+const soundStrayanaCheckbox = document.getElementById("soundStrayanaCheckbox");
+
+const soundPyraCheckbox = document.getElementById("soundPyraCheckbox");
+const soundMistCheckbox = document.getElementById("soundMistCheckbox");
+const soundBloodCheckbox = document.getElementById("soundBloodCheckbox");
+
+const showJunoCheckbox = document.getElementById("showJunoCheckbox");
+const showDratanCheckbox = document.getElementById("showDratanCheckbox");
+const showMeracCheckbox = document.getElementById("showMeracCheckbox");
+const showEgehaCheckbox = document.getElementById("showEgehaCheckbox");
+const showStrayanaCheckbox = document.getElementById("showStrayanaCheckbox");
+
+const showPyraCheckbox = document.getElementById("showPyraCheckbox");
+const showMistCheckbox = document.getElementById("showMistCheckbox");
+const showBloodCheckbox = document.getElementById("showBloodCheckbox");
+
+const SETTINGS_STORAGE_KEY = "lc_user_settings";
+
+const defaultSettings = {
+  alertSound: "high",
+  volume: 0.3,
+  muted: false,
+  soonMinutes: 10,
+
+  soundJuno: true,
+  soundDratan: true,
+  soundMerac: true,
+  soundEgeha: true,
+  soundStrayana: true,
+
+  soundPyra: true,
+  soundMist: true,
+  soundBlood: true,
+
+  showJuno: true,
+  showDratan: true,
+  showMerac: true,
+  showEgeha: true,
+  showStrayana: true,
+
+  showPyra: true,
+  showMist: true,
+  showBlood: true
+};
+
+let userSettings = { ...defaultSettings };
+
+
+// 🔽 HIER EINFÜGEN (Schritt 2.2)
+function updateVolumeLabel() {
+  volumeValue.textContent = Number(volumeRange.value).toFixed(2);
+}
+
+function applySettingsToForm() {
+  soundSelect.value = userSettings.alertSound;
+  volumeRange.value = userSettings.volume;
+  muteCheckbox.checked = userSettings.muted;
+  soonMinutesInput.value = userSettings.soonMinutes;
+
+ soundJunoCheckbox.checked = userSettings.soundJuno;
+soundDratanCheckbox.checked = userSettings.soundDratan;
+soundMeracCheckbox.checked = userSettings.soundMerac;
+soundEgehaCheckbox.checked = userSettings.soundEgeha;
+soundStrayanaCheckbox.checked = userSettings.soundStrayana;
+
+soundPyraCheckbox.checked = userSettings.soundPyra;
+soundMistCheckbox.checked = userSettings.soundMist;
+soundBloodCheckbox.checked = userSettings.soundBlood;
+
+showJunoCheckbox.checked = userSettings.showJuno;
+showDratanCheckbox.checked = userSettings.showDratan;
+showMeracCheckbox.checked = userSettings.showMerac;
+showEgehaCheckbox.checked = userSettings.showEgeha;
+showStrayanaCheckbox.checked = userSettings.showStrayana;
+
+showPyraCheckbox.checked = userSettings.showPyra;
+showMistCheckbox.checked = userSettings.showMist;
+showBloodCheckbox.checked = userSettings.showBlood;
+
+  updateVolumeLabel();
+}
+
+function applyUIFilter() {
+  const mapToSetting = {
+    juno: userSettings.showJuno,
+    dratan: userSettings.showDratan,
+    merac: userSettings.showMerac,
+    egeha: userSettings.showEgeha,
+    strayana: userSettings.showStrayana,
+    pyra: userSettings.showPyra,
+    mist: userSettings.showMist,
+    blood: userSettings.showBlood
+  };
+
+  Object.entries(mapToSetting).forEach(([mapKey, isVisible]) => {
+    const row = document.getElementById(`timerRow-${mapKey}`);
+    if (!row) return;
+
+    row.style.display = isVisible ? "" : "none";
+  });
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    userSettings = raw ? { ...defaultSettings, ...JSON.parse(raw) } : { ...defaultSettings };
+  } catch (e) {
+    console.warn("Einstellungen konnten nicht geladen werden:", e);
+    userSettings = { ...defaultSettings };
+  }
+
+  applySettingsToForm();
+  applyUIFilter();
+}
+
+function saveSettings() {
+  console.log("SAVE SETTINGS AUSGEFÜHRT"); // 👈 nur zum Testen
+
+userSettings = {
+  alertSound: soundSelect.value,
+  volume: Number(volumeRange.value),
+  muted: muteCheckbox.checked,
+  soonMinutes: Number(soonMinutesInput.value),
+
+soundJuno: soundJunoCheckbox.checked,
+soundDratan: soundDratanCheckbox.checked,
+soundMerac: soundMeracCheckbox.checked,
+soundEgeha: soundEgehaCheckbox.checked,
+soundStrayana: soundStrayanaCheckbox.checked,
+
+  soundPyra: soundPyraCheckbox.checked,
+  soundMist: soundMistCheckbox.checked,
+  soundBlood: soundBloodCheckbox.checked,
+
+  showJuno: showJunoCheckbox.checked,
+showDratan: showDratanCheckbox.checked,
+showMerac: showMeracCheckbox.checked,
+showEgeha: showEgehaCheckbox.checked,
+showStrayana: showStrayanaCheckbox.checked,
+
+showPyra: showPyraCheckbox.checked,
+showMist: showMistCheckbox.checked,
+showBlood: showBloodCheckbox.checked
+  
+};
+
+  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(userSettings));
+  setStatus("Einstellungen gespeichert.", "ok");
+  applyUIFilter();
+}
+
+function toggleSettingsModal() {
+  const isOpen = settingsModal.classList.contains("open");
+
+  if (isOpen) {
+    settingsModal.classList.remove("open");
+    settingsOverlay.style.display = "none";
+  } else {
+    settingsModal.classList.add("open");
+    settingsOverlay.style.display = "block";
+  }
+}
+
+function shouldPlaySoundForBoss(mapKey) {
+  if (userSettings.muted) return false;
+
+  if (mapKey === "juno") return userSettings.soundJuno;
+  if (mapKey === "dratan") return userSettings.soundDratan;
+  if (mapKey === "merac") return userSettings.soundMerac;
+  if (mapKey === "egeha") return userSettings.soundEgeha;
+  if (mapKey === "strayana") return userSettings.soundStrayana;
+
+  if (mapKey === "pyra") return userSettings.soundPyra;
+  if (mapKey === "mist") return userSettings.soundMist;
+  if (mapKey === "blood") return userSettings.soundBlood;
+
+  return true;
+}
+
+function playAlertSound(soundType = userSettings.alertSound, volume = userSettings.volume) {
+  if (userSettings.muted) return;
+
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+
+    function playTone(freq, startOffset, duration) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.value = volume;
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime + startOffset);
+      osc.stop(ctx.currentTime + startOffset + duration);
+    }
+
+ if (soundType === "high") {
+  playTone(880, 0, 0.35);
+
+} else if (soundType === "low") {
+  playTone(440, 0, 0.35);
+
+} else if (soundType === "double") {
+  playTone(880, 0, 0.18);
+  playTone(660, 0.22, 0.18);
+
+} else if (soundType === "triple") {
+  playTone(880, 0, 0.12);
+  playTone(700, 0.16, 0.12);
+  playTone(980, 0.32, 0.16);
+
+} else if (soundType === "pingpong") {
+  playTone(900, 0, 0.14);
+  playTone(500, 0.18, 0.14);
+  playTone(900, 0.36, 0.14);
+
+} else if (soundType === "alarm") {
+  playTone(880, 0, 0.12);
+  playTone(880, 0.16, 0.12);
+  playTone(880, 0.32, 0.12);
+  playTone(660, 0.48, 0.18);
+
+} else if (soundType === "soft") {
+  playTone(620, 0, 0.25);
+  playTone(740, 0.28, 0.25);
+
+} else if (soundType === "deep") {
+  playTone(320, 0, 0.28);
+  playTone(260, 0.34, 0.32);
+}
+
+    setTimeout(() => ctx.close(), 1000);
+  } catch (e) {
+    console.warn("Sound konnte nicht abgespielt werden:", e);
+  }
+}
 
 /**********************************
  *   LOGBUCH
@@ -1127,38 +1557,21 @@ function updateTimer(mapKey, channel) {
 
   d.classList.remove("timer-ready", "timer-soon", "timer-cooldown");
 
-  if (remaining <= 0) {
-    d.textContent = "SPAWN MÖGLICH";
-    d.classList.add("timer-ready");
+if (remaining <= 0) {
+  d.textContent = "SPAWN MÖGLICH";
+  d.classList.add("timer-ready");
 
-    if (!st.hasRang) {
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.value = 880;
-        gain.gain.value = 0.03;
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
-        osc.onended = () => ctx.close();
-      } catch (e) {
-        console.warn("Beep fehlgeschlagen:", e);
-      }
-
-      st.hasRang = true;
-    }
-
-    return;
+if (!st.hasRang) {
+  if (shouldPlaySoundForBoss(mapKey)) {
+    playAlertSound();
   }
+  st.hasRang = true;
+}
 
-  const soonThresholdMs = 10 * 60 * 1000;
+  return;
+}
+
+ const soonThresholdMs = (userSettings.soonMinutes || 10) * 60 * 1000;
 
   if (remaining <= soonThresholdMs) {
     d.textContent = `BALD MÖGLICH (${formatTime(remaining)})`;
@@ -1400,11 +1813,32 @@ addLogbookEntry({
 setStatus(`Blood Shadow Dragon: 1h Timer für ${channel} gestartet.`, "ok");
 };
 
+// 🔐 SETTINGS EVENTS
+settingsBtn.addEventListener("click", toggleSettingsModal);
+
+settingsOverlay.addEventListener("click", () => {
+  settingsModal.classList.remove("open");
+  settingsOverlay.style.display = "none";
+});
+
+volumeRange.addEventListener("input", updateVolumeLabel);
+
+testSoundBtn.addEventListener("click", () => {
+  playAlertSound(soundSelect.value, Number(volumeRange.value));
+});
+
+saveSettingsBtn.addEventListener("click", saveSettings);
+
 // Initiale Map laden
 loadMap("juno");
+loadSettings();
 loadLogbook();
 loadTimersFromCloud();
 setInterval(loadTimersFromCloud, 5000);
+
+settingsModal.classList.remove("open");
+settingsOverlay.style.display = "none";
+
 panelTabs.forEach(tab => {
   tab.addEventListener("click", () => {
     const target = tab.dataset.panel;
