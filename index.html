@@ -345,8 +345,24 @@
   </style>
 </head>
 
-<body>
-  <div class="app">
+  <body>
+
+  <!-- 🔐 LOGIN SCREEN -->
+  <div id="authScreen">
+    <h2>Login</h2>
+
+    <input id="loginEmail" type="email" placeholder="E-Mail" />
+    <input id="loginPassword" type="password" placeholder="Passwort" />
+
+    <button id="loginBtn">Einloggen</button>
+    <button id="logoutBtn" style="display:none;">Logout</button>
+
+    <div id="authStatus"></div>
+  </div>
+
+  <!-- 👇 DEINE APP -->
+  <div class="app" id="appRoot" style="display:none;">
+ 
     <h1>Last Chaos – Raidboss Map</h1>
     <p class="subtitle">Automatische Map- & Boss-Erkennung + Respawn Timer pro Channel</p>
 
@@ -557,6 +573,59 @@ const SUPABASE_URL = "https://dikccjokoxzbdfcndsvk.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2Njam9rb3h6YmRmY25kc3ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MTM5MzgsImV4cCI6MjA5MDE4OTkzOH0.dMOpPC_7tb07MS6a0S7YNvPkWx2txngT-v6YHhhPbRI";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 🔐 LOGIN SYSTEM
+const appRoot = document.getElementById("appRoot");
+const authScreen = document.getElementById("authScreen");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+const authStatus = document.getElementById("authStatus");
+
+function setAuthStatus(msg, type = "ok") {
+  authStatus.textContent = msg;
+  authStatus.className = "status";
+  authStatus.classList.add(type === "ok" ? "status-ok" : "status-error");
+}
+
+function showApp() {
+  authScreen.style.display = "none";
+  appRoot.style.display = "block";
+}
+
+function showLogin() {
+  authScreen.style.display = "flex";
+  appRoot.style.display = "none";
+}
+
+loginBtn.addEventListener("click", async () => {
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value.trim();
+
+  if (!email || !password) {
+    setAuthStatus("Bitte E-Mail und Passwort eingeben.", "error");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    setAuthStatus("Login fehlgeschlagen: " + error.message, "error");
+    return;
+  }
+
+  setAuthStatus("Erfolgreich eingeloggt!", "ok");
+  showApp();
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+  showLogin();
+});
 
 async function saveTimerToCloud(mapKey, channel, bossLabel, killTimeText, endTs) {
     console.log("SAVE START", { mapKey, channel, bossLabel, killTimeText, endTs });
