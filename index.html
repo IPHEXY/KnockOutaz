@@ -531,6 +531,48 @@
   <option value="30">30 Minuten</option>
 </select>
 
+<label style="margin-top:1rem; display:block; font-weight:700;">
+  Ton-Wiedergabe
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="playOnSoonCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Ton auch bei „Bald möglich“
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="repeatAlertCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Ton wiederholen
+</label>
+
+<label for="repeatSeconds" style="margin-top:0.8rem; display:block;">Wiederholung alle</label>
+<select id="repeatSeconds">
+  <option value="10">10 Sekunden</option>
+  <option value="15">15 Sekunden</option>
+  <option value="30">30 Sekunden</option>
+  <option value="60">60 Sekunden</option>
+</select>
+
+<label style="margin-top:1rem; display:block; font-weight:700;">
+  Browser-Benachrichtigungen
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="notifyOnSoonCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Benachrichtigung bei „BALD MÖGLICH“
+</label>
+
+<label style="margin-top:0.4rem; display:block;">
+  <input id="notifyOnReadyCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
+  Benachrichtigung bei „SPAWN MÖGLICH“
+</label>
+
+<button id="requestNotificationPermissionBtn" type="button">
+  Browser-Benachrichtigungen erlauben
+</button>
+
+<div id="notificationPermissionStatus" class="hint"></div>
+
   <button id="testSoundBtn" type="button">Ton testen</button>
   <button id="saveSettingsBtn" type="button">Einstellungen speichern</button>
 </div>
@@ -644,7 +686,6 @@
   <span id="timerDisplay-blood-ch1" class="timer-display">--:--:--</span>
   <span id="timerDisplay-blood-ch2" class="timer-display">--:--:--</span>
 </div>
-
 <div id="timerRow-strayana" class="timer-row dual timer-row-strayana">
   <span class="map-label">Blue Dragon</span>
   <span id="timerDisplay-strayana-ch1" class="timer-display">--:--:--</span>
@@ -733,11 +774,27 @@
   </select>
 
   <button id="startBloodTimerBtn" type="button">Blood Shadow Dragon Timer starten</button>
-</div>
-      </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <hr style="margin:1rem 0; opacity:0.2;">
+
+<h4 style="margin:0 0 0.4rem 0;">Blue Dragon</h4>
+<label>Kill-Zeit (HH:MM)</label>
+<input id="strayanaKillTimeInput" type="text" placeholder="15:16" />
+
+<label style="margin-top:0.6rem;">Channel wählen</label>
+<select id="strayanaChannelSelect">
+  <option value="ch1">Channel 1</option>
+  <option value="ch2">Channel 2</option>
+</select>
+
+<button id="startStrayanaTimerBtn" type="button">Blue Dragon Timer starten</button>
+
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- SCRIPT START -->
     <script>
@@ -972,6 +1029,15 @@ const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 const muteCheckbox = document.getElementById("muteCheckbox");
 const soonMinutesInput = document.getElementById("soonMinutes");
 
+const playOnSoonCheckbox = document.getElementById("playOnSoonCheckbox");
+const repeatAlertCheckbox = document.getElementById("repeatAlertCheckbox");
+const repeatSecondsSelect = document.getElementById("repeatSeconds");
+
+const notifyOnSoonCheckbox = document.getElementById("notifyOnSoonCheckbox");
+const notifyOnReadyCheckbox = document.getElementById("notifyOnReadyCheckbox");
+const requestNotificationPermissionBtn = document.getElementById("requestNotificationPermissionBtn");
+const notificationPermissionStatus = document.getElementById("notificationPermissionStatus");
+
 const soundJunoCheckbox = document.getElementById("soundJunoCheckbox");
 const soundDratanCheckbox = document.getElementById("soundDratanCheckbox");
 const soundMeracCheckbox = document.getElementById("soundMeracCheckbox");
@@ -999,6 +1065,13 @@ const defaultSettings = {
   volume: 0.3,
   muted: false,
   soonMinutes: 10,
+
+  playOnSoon: false,
+repeatAlert: false,
+repeatSeconds: 30,
+
+notifyOnSoon: false,
+notifyOnReady: true,
 
   soundJuno: true,
   soundDratan: true,
@@ -1029,11 +1102,92 @@ function updateVolumeLabel() {
   volumeValue.textContent = Number(volumeRange.value).toFixed(2);
 }
 
+function updateNotificationPermissionStatus() {
+  if (!notificationPermissionStatus) return;
+
+  if (!("Notification" in window)) {
+    notificationPermissionStatus.textContent = "Dieser Browser unterstützt keine Benachrichtigungen.";
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    notificationPermissionStatus.textContent = "Benachrichtigungen sind erlaubt.";
+  } else if (Notification.permission === "denied") {
+    notificationPermissionStatus.textContent = "Benachrichtigungen wurden blockiert.";
+  } else {
+    notificationPermissionStatus.textContent = "Benachrichtigungen sind noch nicht erlaubt.";
+  }
+}
+
+async function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    updateNotificationPermissionStatus();
+    return false;
+  }
+
+  const permission = await Notification.requestPermission();
+  updateNotificationPermissionStatus();
+  return permission === "granted";
+}
+
+function getBossDisplayName(mapKey) {
+  const names = {
+    juno: "Grand Balrog",
+    dratan: "Grand Devilroad Kamira",
+    merac: "Grand Red Dragon",
+    egeha: "Grand Golden Dragon",
+    strayana: "Blue Dragon",
+    pyra: "Darkmind Terrain",
+    mist: "Mist Shadow Dragon",
+    blood: "Blood Shadow Dragon"
+  };
+
+  return names[mapKey] || mapKey;
+}
+
+function sendBossNotification(mapKey, channel, phase, remainingMs = 0) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  const bossName = getBossDisplayName(mapKey);
+  const channelLabel = channel.toUpperCase();
+
+  let title = "";
+  let body = "";
+
+  if (phase === "soon") {
+    title = `Boss bald möglich: ${bossName}`;
+    body = `${bossName} auf ${channelLabel} ist BALD MÖGLICH (${formatTime(remainingMs)} verbleibend).`;
+  } else {
+    title = `Spawn möglich: ${bossName}`;
+    body = `${bossName} auf ${channelLabel} ist jetzt SPAWN MÖGLICH.`;
+  }
+
+  const n = new Notification(title, {
+    body,
+    tag: `${mapKey}-${channel}-${phase}`,
+    renotify: false
+  });
+
+  n.onclick = () => {
+    window.focus();
+    n.close();
+  };
+}
+
 function applySettingsToForm() {
   soundSelect.value = userSettings.alertSound;
   volumeRange.value = userSettings.volume;
   muteCheckbox.checked = userSettings.muted;
   soonMinutesInput.value = userSettings.soonMinutes;
+
+  playOnSoonCheckbox.checked = userSettings.playOnSoon;
+repeatAlertCheckbox.checked = userSettings.repeatAlert;
+repeatSecondsSelect.value = userSettings.repeatSeconds;
+
+notifyOnSoonCheckbox.checked = userSettings.notifyOnSoon;
+notifyOnReadyCheckbox.checked = userSettings.notifyOnReady;
+updateNotificationPermissionStatus();
 
  soundJunoCheckbox.checked = userSettings.soundJuno;
 soundDratanCheckbox.checked = userSettings.soundDratan;
@@ -1099,6 +1253,12 @@ userSettings = {
   volume: Number(volumeRange.value),
   muted: muteCheckbox.checked,
   soonMinutes: Number(soonMinutesInput.value),
+
+  playOnSoon: playOnSoonCheckbox.checked,
+repeatAlert: repeatAlertCheckbox.checked,
+repeatSeconds: Number(repeatSecondsSelect.value),
+notifyOnSoon: notifyOnSoonCheckbox.checked,
+notifyOnReady: notifyOnReadyCheckbox.checked,
 
 soundJuno: soundJunoCheckbox.checked,
 soundDratan: soundDratanCheckbox.checked,
@@ -1525,6 +1685,7 @@ const channels = ["ch1", "ch2"];
 
 const timerState = {};
 const timerDisplays = {};
+const alertState = {};
 
 function pad(n) { return String(n).padStart(2, "0"); }
 
@@ -1538,12 +1699,12 @@ function formatTime(ms) {
 }
 
 function updateTimer(mapKey, channel) {
-  const key = `${mapKey}-${channel}`;
+  const key = mapKey + "-" + channel;
   const st = timerState[key];
   const d = timerDisplays[key];
 
   if (!d) {
-    console.warn(`Timer-Display fehlt für ${key}`);
+    console.warn("Timer-Display fehlt für " + key);
     return;
   }
 
@@ -1561,23 +1722,55 @@ if (remaining <= 0) {
   d.textContent = "SPAWN MÖGLICH";
   d.classList.add("timer-ready");
 
-if (!st.hasRang) {
-  if (shouldPlaySoundForBoss(mapKey)) {
-    playAlertSound();
+  const canPlayReady = shouldPlaySoundForBoss(mapKey);
+
+  if (!st.hasRang) {
+    if (canPlayReady) {
+      playAlertSound();
+      alertState[key].lastRepeatAt = Date.now();
+    }
+
+    if (userSettings.notifyOnReady && !alertState[key].readyNotified) {
+      sendBossNotification(mapKey, channel, "ready");
+      alertState[key].readyNotified = true;
+    }
+
+    st.hasRang = true;
   }
-  st.hasRang = true;
-}
 
   return;
 }
 
- const soonThresholdMs = (userSettings.soonMinutes || 10) * 60 * 1000;
+  const soonThresholdMs = (userSettings.soonMinutes || 10) * 60 * 1000;
 
-  if (remaining <= soonThresholdMs) {
-    d.textContent = `BALD MÖGLICH (${formatTime(remaining)})`;
-    d.classList.add("timer-soon");
-    return;
+if (remaining <= soonThresholdMs) {
+  d.textContent = "BALD MÖGLICH (" + formatTime(remaining) + ")";
+  d.classList.add("timer-soon");
+
+  const canPlaySoon =
+    userSettings.playOnSoon &&
+    shouldPlaySoundForBoss(mapKey);
+
+  if (canPlaySoon && !alertState[key].soonPlayed) {
+    playAlertSound();
+    alertState[key].soonPlayed = true;
+    alertState[key].lastRepeatAt = Date.now();
+  } else if (
+    canPlaySoon &&
+    userSettings.repeatAlert &&
+    Date.now() - alertState[key].lastRepeatAt >= (userSettings.repeatSeconds || 30) * 1000
+  ) {
+    playAlertSound();
+    alertState[key].lastRepeatAt = Date.now();
   }
+
+  if (userSettings.notifyOnSoon && !alertState[key].soonNotified) {
+    sendBossNotification(mapKey, channel, "soon", remaining);
+    alertState[key].soonNotified = true;
+  }
+
+  return;
+}
 
   d.textContent = formatTime(remaining);
   d.classList.add("timer-cooldown");
@@ -1591,9 +1784,13 @@ function startRespawnTimer(mapKey, channel, endTs) {
   const endChanged = Number(st.end) !== newEnd;
   st.end = newEnd;
 
-  if (endChanged) {
-    st.hasRang = false;
-  }
+if (endChanged) {
+  st.hasRang = false;
+  alertState[key].soonPlayed = false;
+  alertState[key].lastRepeatAt = 0;
+  alertState[key].soonNotified = false;
+  alertState[key].readyNotified = false;
+}
 
   if (!st.intervalId) {
     st.intervalId = setInterval(() => updateTimer(mapKey, channel), 1000);
@@ -1609,6 +1806,12 @@ mapKeys.forEach(m => {
     const key = `${m}-${c}`;
     timerState[key] = { end: null, hasRang: false, intervalId: null };
     timerDisplays[key] = document.getElementById(`timerDisplay-${key}`);
+alertState[key] = {
+  soonPlayed: false,
+  lastRepeatAt: 0,
+  soonNotified: false,
+  readyNotified: false
+};
   });
 });
 
@@ -1644,17 +1847,69 @@ const bossConfigs = [
 ];
 
 function calculateRespawnEnd(timeStr, respawnMs = respawnDelayMs) {
-  const m = timeStr.match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
+  const parsed = parseTime(timeStr);
+  if (!parsed) return null;
 
   const now = new Date();
   const t = new Date();
 
-  t.setHours(Number(m[1]), Number(m[2]), 0, 0);
+  t.setHours(parsed.hours, parsed.minutes, 0, 0);
 
   if (t > now) t.setDate(t.getDate() - 1);
 
   return t.getTime() + respawnMs;
+
+}
+
+function parseTime(timeStr) {
+  if (!timeStr) return null;
+
+  let clean = timeStr.trim();
+
+  // Fall 1: Mit Doppelpunkt (z.B. 19:20)
+  if (clean.includes(":")) {
+    const parts = clean.split(":");
+    if (parts.length !== 2) return null;
+
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+
+    if (
+      isNaN(hours) || isNaN(minutes) ||
+      hours < 0 || hours > 23 ||
+      minutes < 0 || minutes > 59
+    ) {
+      return null;
+    }
+
+    return { hours, minutes };
+  }
+
+  // Fall 2: Ohne Doppelpunkt (z.B. 1920 oder 920)
+  if (/^\d{3,4}$/.test(clean)) {
+    let hours, minutes;
+
+    if (clean.length === 4) {
+      hours = Number(clean.slice(0, 2));
+      minutes = Number(clean.slice(2, 4));
+    } else {
+      // z.B. 920 → 09:20
+      hours = Number(clean.slice(0, 1));
+      minutes = Number(clean.slice(1, 3));
+    }
+
+    if (
+      isNaN(hours) || isNaN(minutes) ||
+      hours < 0 || hours > 23 ||
+      minutes < 0 || minutes > 59
+    ) {
+      return null;
+    }
+
+    return { hours, minutes };
+  }
+
+  return null;
 }
 
 
@@ -1760,13 +2015,13 @@ document.getElementById("startMistTimerBtn").onclick = async () => {
     return;
   }
 
+const saved = await saveTimerToCloud("mist", channel, "Mist Shadow Dragon", timeStr, endTs);
+if (!saved) return;
+
 startRespawnTimer("mist", channel, endTs);
 loadMap("strayana");
 markerLabel.textContent = "Mist Shadow Dragon";
 placeMarker(355, 800, false);
-
-const saved = await saveTimerToCloud("mist", channel, "Mist Shadow Dragon", timeStr, endTs);
-if (!saved) return;
 
 addLogbookEntry({
   bossLabel: "Mist Shadow Dragon",
@@ -1794,13 +2049,13 @@ document.getElementById("startBloodTimerBtn").onclick = async () => {
     return;
   }
 
+const saved = await saveTimerToCloud("blood", channel, "Blood Shadow Dragon", timeStr, endTs);
+if (!saved) return;
+
 startRespawnTimer("blood", channel, endTs);
 loadMap("strayana");
 markerLabel.textContent = "Blood Shadow Dragon";
 placeMarker(1320, 1100, false);
-
-const saved = await saveTimerToCloud("blood", channel, "Blood Shadow Dragon", timeStr, endTs);
-if (!saved) return;
 
 addLogbookEntry({
   bossLabel: "Blood Shadow Dragon",
@@ -1811,6 +2066,39 @@ addLogbookEntry({
 });
 
 setStatus(`Blood Shadow Dragon: 1h Timer für ${channel} gestartet.`, "ok");
+};
+
+document.getElementById("startStrayanaTimerBtn").onclick = async () => {
+  const timeStr = document.getElementById("strayanaKillTimeInput").value.trim();
+  const channel = document.getElementById("strayanaChannelSelect").value;
+
+  if (!timeStr) {
+    setStatus("Bitte Kill-Zeit für Blue Dragon eingeben.", "error");
+    return;
+  }
+
+  const endTs = calculateRespawnEnd(timeStr, strayanaRespawnMs);
+  if (!endTs) {
+    setStatus("Uhrzeit ungültig, Format HH:MM", "error");
+    return;
+  }
+
+  const saved = await saveTimerToCloud("strayana", channel, "Blue Dragon", timeStr, endTs);
+  if (!saved) return;
+
+  startRespawnTimer("strayana", channel, endTs);
+  loadMap("strayana");
+  markerLabel.textContent = "Blue Dragon";
+
+  addLogbookEntry({
+    bossLabel: "Blue Dragon",
+    mapKey: "strayana",
+    channel,
+    killTimeText: timeStr,
+    spawnAt: endTs
+  });
+
+  setStatus(`Blue Dragon: 1h Timer für ${channel} gestartet.`, "ok");
 };
 
 // 🔐 SETTINGS EVENTS
@@ -1825,6 +2113,16 @@ volumeRange.addEventListener("input", updateVolumeLabel);
 
 testSoundBtn.addEventListener("click", () => {
   playAlertSound(soundSelect.value, Number(volumeRange.value));
+});
+
+requestNotificationPermissionBtn.addEventListener("click", async () => {
+  const granted = await requestNotificationPermission();
+
+  if (granted) {
+    new Notification("Benachrichtigungen aktiviert", {
+      body: "Du bekommst jetzt Boss-Hinweise im Browser."
+    });
+  }
 });
 
 saveSettingsBtn.addEventListener("click", saveSettings);
