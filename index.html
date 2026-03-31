@@ -430,49 +430,6 @@
   Ton komplett deaktivieren (Mute)
 </label>
 
-<label style="margin-top:0.8rem; display:block; font-weight:700;">
-  Ton nur für bestimmte Bosse
-</label>
-
-<label style="margin-top:0.4rem; display:block;">
-  <input id="soundJunoCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Grand Balrog
-</label>
-
-<label style="margin-top:0.4rem; display:block;">
-  <input id="soundDratanCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Grand Devilroad Kamira
-</label>
-
-<label style="margin-top:0.4rem; display:block;">
-  <input id="soundMeracCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Grand Red Dragon
-</label>
-
-<label style="margin-top:0.4rem; display:block;">
-  <input id="soundEgehaCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Grand Golden Dragon
-</label>
-
-<label style="margin-top:0.4rem; display:block;">
-  <input id="soundStrayanaCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Blue Dragon
-</label>
-
-<label style="margin-top:0.4rem; display:block;">
-  <input id="soundPyraCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Darkmind Terrain
-</label>
-
-<label style="margin-top:0.4rem; display:block;">
-  <input id="soundMistCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Mist Shadow Dragon
-</label>
-
-<label style="margin-top:0.4rem; margin-bottom:0.8rem; display:block;">
-  <input id="soundBloodCheckbox" type="checkbox" style="width:auto; margin-right:0.5rem;" />
-  Blood Shadow Dragon
-</label>
 
 <label style="margin-top:1rem; display:block; font-weight:700;">
   Anzeige filtern (UI)
@@ -1038,16 +995,6 @@ const notifyOnReadyCheckbox = document.getElementById("notifyOnReadyCheckbox");
 const requestNotificationPermissionBtn = document.getElementById("requestNotificationPermissionBtn");
 const notificationPermissionStatus = document.getElementById("notificationPermissionStatus");
 
-const soundJunoCheckbox = document.getElementById("soundJunoCheckbox");
-const soundDratanCheckbox = document.getElementById("soundDratanCheckbox");
-const soundMeracCheckbox = document.getElementById("soundMeracCheckbox");
-const soundEgehaCheckbox = document.getElementById("soundEgehaCheckbox");
-const soundStrayanaCheckbox = document.getElementById("soundStrayanaCheckbox");
-
-const soundPyraCheckbox = document.getElementById("soundPyraCheckbox");
-const soundMistCheckbox = document.getElementById("soundMistCheckbox");
-const soundBloodCheckbox = document.getElementById("soundBloodCheckbox");
-
 const showJunoCheckbox = document.getElementById("showJunoCheckbox");
 const showDratanCheckbox = document.getElementById("showDratanCheckbox");
 const showMeracCheckbox = document.getElementById("showMeracCheckbox");
@@ -1072,16 +1019,6 @@ repeatSeconds: 30,
 
 notifyOnSoon: false,
 notifyOnReady: true,
-
-  soundJuno: true,
-  soundDratan: true,
-  soundMerac: true,
-  soundEgeha: true,
-  soundStrayana: true,
-
-  soundPyra: true,
-  soundMist: true,
-  soundBlood: true,
 
   showJuno: true,
   showDratan: true,
@@ -1189,16 +1126,6 @@ notifyOnSoonCheckbox.checked = userSettings.notifyOnSoon;
 notifyOnReadyCheckbox.checked = userSettings.notifyOnReady;
 updateNotificationPermissionStatus();
 
- soundJunoCheckbox.checked = userSettings.soundJuno;
-soundDratanCheckbox.checked = userSettings.soundDratan;
-soundMeracCheckbox.checked = userSettings.soundMerac;
-soundEgehaCheckbox.checked = userSettings.soundEgeha;
-soundStrayanaCheckbox.checked = userSettings.soundStrayana;
-
-soundPyraCheckbox.checked = userSettings.soundPyra;
-soundMistCheckbox.checked = userSettings.soundMist;
-soundBloodCheckbox.checked = userSettings.soundBlood;
-
 showJunoCheckbox.checked = userSettings.showJuno;
 showDratanCheckbox.checked = userSettings.showDratan;
 showMeracCheckbox.checked = userSettings.showMerac;
@@ -1260,16 +1187,6 @@ repeatSeconds: Number(repeatSecondsSelect.value),
 notifyOnSoon: notifyOnSoonCheckbox.checked,
 notifyOnReady: notifyOnReadyCheckbox.checked,
 
-soundJuno: soundJunoCheckbox.checked,
-soundDratan: soundDratanCheckbox.checked,
-soundMerac: soundMeracCheckbox.checked,
-soundEgeha: soundEgehaCheckbox.checked,
-soundStrayana: soundStrayanaCheckbox.checked,
-
-  soundPyra: soundPyraCheckbox.checked,
-  soundMist: soundMistCheckbox.checked,
-  soundBlood: soundBloodCheckbox.checked,
-
   showJuno: showJunoCheckbox.checked,
 showDratan: showDratanCheckbox.checked,
 showMerac: showMeracCheckbox.checked,
@@ -1302,17 +1219,33 @@ function toggleSettingsModal() {
 function shouldPlaySoundForBoss(mapKey) {
   if (userSettings.muted) return false;
 
-  if (mapKey === "juno") return userSettings.soundJuno;
-  if (mapKey === "dratan") return userSettings.soundDratan;
-  if (mapKey === "merac") return userSettings.soundMerac;
-  if (mapKey === "egeha") return userSettings.soundEgeha;
-  if (mapKey === "strayana") return userSettings.soundStrayana;
+  const mapToVisibleSetting = {
+    juno: userSettings.showJuno,
+    dratan: userSettings.showDratan,
+    merac: userSettings.showMerac,
+    egeha: userSettings.showEgeha,
+    strayana: userSettings.showStrayana,
+    pyra: userSettings.showPyra,
+    mist: userSettings.showMist,
+    blood: userSettings.showBlood
+  };
 
-  if (mapKey === "pyra") return userSettings.soundPyra;
-  if (mapKey === "mist") return userSettings.soundMist;
-  if (mapKey === "blood") return userSettings.soundBlood;
+  return !!mapToVisibleSetting[mapKey];
+}
 
-  return true;
+function shouldNotifyForBoss(mapKey) {
+  const mapToVisibleSetting = {
+    juno: userSettings.showJuno,
+    dratan: userSettings.showDratan,
+    merac: userSettings.showMerac,
+    egeha: userSettings.showEgeha,
+    strayana: userSettings.showStrayana,
+    pyra: userSettings.showPyra,
+    mist: userSettings.showMist,
+    blood: userSettings.showBlood
+  };
+
+  return !!mapToVisibleSetting[mapKey];
 }
 
 function playAlertSound(soundType = userSettings.alertSound, volume = userSettings.volume) {
@@ -1730,7 +1663,7 @@ if (remaining <= 0) {
       alertState[key].lastRepeatAt = Date.now();
     }
 
-    if (userSettings.notifyOnReady && !alertState[key].readyNotified) {
+    if (shouldNotifyForBoss(mapKey) && userSettings.notifyOnReady && !alertState[key].readyNotified) {
       sendBossNotification(mapKey, channel, "ready");
       alertState[key].readyNotified = true;
     }
@@ -1764,7 +1697,7 @@ if (remaining <= soonThresholdMs) {
     alertState[key].lastRepeatAt = Date.now();
   }
 
-  if (userSettings.notifyOnSoon && !alertState[key].soonNotified) {
+  if (shouldNotifyForBoss(mapKey) && userSettings.notifyOnSoon && !alertState[key].soonNotified) {
     sendBossNotification(mapKey, channel, "soon", remaining);
     alertState[key].soonNotified = true;
   }
