@@ -870,14 +870,31 @@ async function loadTimersFromCloud() {
 
       if (!st) return;
 
-      if (Number(st.end) !== endTs) {
-        startRespawnTimer(row.map_key, row.channel, endTs);
-      } else {
-        if (!st.intervalId) {
-          st.intervalId = setInterval(() => updateTimer(row.map_key, row.channel), 1000);
-        }
-        updateTimer(row.map_key, row.channel);
-      }
+  if (Number(st.end) !== endTs) {
+  startRespawnTimer(row.map_key, row.channel, endTs);
+
+  const remaining = endTs - Date.now();
+  const soonThresholdMs = (userSettings.soonMinutes || 10) * 60 * 1000;
+
+  if (remaining <= 0) {
+    st.phase = "ready";
+    st.hasRang = true;
+    alertState[key].readyNotified = true;
+  } else if (remaining <= soonThresholdMs) {
+    st.phase = "soon";
+    alertState[key].soonPlayed = true;
+    alertState[key].soonNotified = true;
+  } else {
+    st.phase = "cooldown";
+  }
+
+  updateTimer(row.map_key, row.channel);
+} else {
+  if (!st.intervalId) {
+    st.intervalId = setInterval(() => updateTimer(row.map_key, row.channel), 1000);
+  }
+  updateTimer(row.map_key, row.channel);
+}
     }
   });
 
@@ -1641,11 +1658,12 @@ function updateTimer(mapKey, channel) {
     return;
   }
 
-  if (!st.end) {
-    d.textContent = "--:--:--";
-    d.classList.remove("timer-ready", "timer-soon", "timer-cooldown");
-    return;
-  }
+if (!st.end) {
+  d.textContent = "--:--:--";
+  d.classList.remove("timer-ready", "timer-soon", "timer-cooldown");
+  st.phase = null;
+  return;
+}
 
   const remaining = st.end - Date.now();
 
@@ -1656,19 +1674,20 @@ if (remaining <= 0) {
   d.classList.add("timer-ready");
 
   const canPlayReady = shouldPlaySoundForBoss(mapKey);
+  const phaseChanged = st.phase !== "ready";
 
-  if (!st.hasRang) {
+  if (phaseChanged) {
     if (canPlayReady) {
       playAlertSound();
       alertState[key].lastRepeatAt = Date.now();
     }
 
-    if (shouldNotifyForBoss(mapKey) && userSettings.notifyOnReady && !alertState[key].readyNotified) {
+    if (shouldNotifyForBoss(mapKey) && userSettings.notifyOnReady) {
       sendBossNotification(mapKey, channel, "ready");
-      alertState[key].readyNotified = true;
     }
 
     st.hasRang = true;
+    st.phase = "ready";
   }
 
   return;
@@ -1684,10 +1703,19 @@ if (remaining <= soonThresholdMs) {
     userSettings.playOnSoon &&
     shouldPlaySoundForBoss(mapKey);
 
-  if (canPlaySoon && !alertState[key].soonPlayed) {
-    playAlertSound();
-    alertState[key].soonPlayed = true;
-    alertState[key].lastRepeatAt = Date.now();
+  const phaseChanged = st.phase !== "soon";
+
+  if (phaseChanged) {
+    if (canPlaySoon) {
+      playAlertSound();
+      alertState[key].lastRepeatAt = Date.now();
+    }
+
+    if (shouldNotifyForBoss(mapKey) && userSettings.notifyOnSoon) {
+      sendBossNotification(mapKey, channel, "soon", remaining);
+    }
+
+    st.phase = "soon";
   } else if (
     canPlaySoon &&
     userSettings.repeatAlert &&
@@ -1697,16 +1725,12 @@ if (remaining <= soonThresholdMs) {
     alertState[key].lastRepeatAt = Date.now();
   }
 
-  if (shouldNotifyForBoss(mapKey) && userSettings.notifyOnSoon && !alertState[key].soonNotified) {
-    sendBossNotification(mapKey, channel, "soon", remaining);
-    alertState[key].soonNotified = true;
-  }
-
   return;
 }
 
   d.textContent = formatTime(remaining);
-  d.classList.add("timer-cooldown");
+d.classList.add("timer-cooldown");
+st.phase = "cooldown";
 }
 
 function startRespawnTimer(mapKey, channel, endTs) {
@@ -1719,6 +1743,7 @@ function startRespawnTimer(mapKey, channel, endTs) {
 
 if (endChanged) {
   st.hasRang = false;
+  st.phase = null;
   alertState[key].soonPlayed = false;
   alertState[key].lastRepeatAt = 0;
   alertState[key].soonNotified = false;
@@ -1737,7 +1762,7 @@ if (endChanged) {
 mapKeys.forEach(m => {
   channels.forEach(c => {
     const key = `${m}-${c}`;
-    timerState[key] = { end: null, hasRang: false, intervalId: null };
+    timerState[key] = { end: null, hasRang: false, intervalId: null, phase: null };
     timerDisplays[key] = document.getElementById(`timerDisplay-${key}`);
 alertState[key] = {
   soonPlayed: false,
